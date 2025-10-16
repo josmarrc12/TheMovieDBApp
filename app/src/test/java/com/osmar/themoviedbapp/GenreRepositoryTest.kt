@@ -8,8 +8,7 @@ import com.osmar.themoviedbapp.data.response.GeneralResponseMoviesModel
 import com.osmar.themoviedbapp.data.response.GenreModel
 import com.osmar.themoviedbapp.data.response.GenresModel
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.*
-import org.junit.Before
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import retrofit2.Call
@@ -22,7 +21,7 @@ class GenreRepositoryTest {
 
     @Test
     fun getGenreListGetResultResponse() = runTest(coroutineRule.testDispatcher){
-        class FakeApi() : ApiService{
+        class FakeApi : ApiService{
             override fun getGenreListOld(apiKey: String): Call<GenresModel> {
                 TODO("Not yet implemented")
             }
@@ -35,21 +34,18 @@ class GenreRepositoryTest {
             }
 
             override suspend fun getMoviesPaging(
-                apiKey: String,
-                page: Int
-            ): GeneralResponseMoviesModel {
-                TODO("Not yet implemented")
-            }
-
-            override suspend fun getMoviesPaging(
                 typeList: String,
                 apiKey: String,
-                page: Int
+                page: Int,
+                language: String
             ): GeneralResponseMoviesModel {
                 TODO("Not yet implemented")
             }
 
-            override suspend fun getGenreList(apiKey: String): Response<GenresModel> {
+            override suspend fun getGenreList(
+                apiKey: String,
+                language: String
+            ): Response<GenresModel> {
                 return Response.success(
                     GenresModel(listOf(
                         GenreModel(1,"Horror"),
@@ -58,11 +54,12 @@ class GenreRepositoryTest {
                     ))
                 )
             }
+
         }
 
         val genreRepository = GenreRepositoryImpl(FakeApi(), ApiResponseHandler())
 
-        val genreListResult = genreRepository.getGenreList()
+        val genreListResult = genreRepository.getGenreList("es")
 
         assert(genreListResult is ResultResponse.Success)
         assertEquals(3,(genreListResult as ResultResponse.Success).data.genres.size)
