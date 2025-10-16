@@ -1,25 +1,22 @@
-package com.osmar.themoviedbapp.ui.home.models
+package com.osmar.themoviedbapp.data.database.entity
 
-import android.os.Parcelable
-import com.osmar.themoviedbapp.data.database.entity.MoviesEntity
-import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.osmar.themoviedbapp.ui.home.models.MovieModel
 
-
-@Serializable
-@Parcelize
-data class MovieModel(
-    val id : Long,
+@Entity
+data class MoviesEntity (
+    @PrimaryKey val id: Long,
     val posterPath : String?,
     val title : String,
     val voteAverage : Double,
     val releaseDate : String,
     val genreIDs : List<Long>,
     val description : String
-) : Parcelable
+)
 
-fun MovieModel.toEntity() : MoviesEntity{
-    return MoviesEntity(
+fun MoviesEntity.toModel() : MovieModel{
+    return MovieModel(
         id = id,
         posterPath = posterPath,
         title = title,

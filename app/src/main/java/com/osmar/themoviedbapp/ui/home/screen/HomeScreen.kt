@@ -1,5 +1,6 @@
 package com.osmar.themoviedbapp.ui.home.screen
 
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,12 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.BottomAppBar
@@ -34,76 +35,74 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil3.compose.AsyncImage
-import com.osmar.themoviedbapp.ui.common.CommonHeader
+import com.osmar.themoviedbapp.R
+import com.osmar.themoviedbapp.ui.UiState
 import com.osmar.themoviedbapp.ui.home.HomeViewModel
 import com.osmar.themoviedbapp.ui.home.models.MovieModel
 import com.osmar.themoviedbapp.utils.ImageSize
 import com.osmar.themoviedbapp.utils.Utils
+import com.osmar.themoviedbapp.utils.Utils.provideColor
+import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), navigateToDetails:(MovieModel) -> Unit){
-    val movieList = viewModel.movies.collectAsLazyPagingItems()
-    when{
-        //starting loading
-        movieList.loadState.refresh is LoadState.Loading && movieList.itemCount == 0 ->{
+fun HomeScreen(
+    viewModel: HomeViewModel = hiltViewModel(),
+    navigateToConfig:() -> Unit,
+    navigateToDetails:(MovieModel) -> Unit){
+        LaunchedEffect(Unit){
+    }
+    val movieListState by viewModel.movieList.collectAsState()
+    when(movieListState){
+        UiState.Start -> {}
+        is UiState.Error -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.error),
+                contentAlignment = Alignment.Center
+            ){
+                Text(
+                    modifier = Modifier.padding(4.dp),
+                    text = stringResource(R.string.error),
+                    color = MaterialTheme.colorScheme.onError,
+                )
+            }
+        }
+        UiState.Loading -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center
             ){
-               CircularProgressIndicator(
-                   modifier =  Modifier.size(64.dp),
-                   color = Color.White
-               )
+                CircularProgressIndicator(
+                    modifier =  Modifier.size(64.dp),
+                    color = MaterialTheme.colorScheme.onError
+                )
             }
         }
-        //not data
-        movieList.loadState.refresh is LoadState.NotLoading && movieList.itemCount == 0 ->{
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
-            ){
-                InfoMessage("No information")
-            }
-        }
-        //Error
-        movieList.loadState.hasError -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
-            ){
-                InfoMessage("Error")
-            }
-        }
-        else ->{
-            val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-            Scaffold(
-                modifier = Modifier
-                    .nestedScroll(scrollBehavior.nestedScrollConnection),
-                topBar = { HomeMainBar(scrollBehavior) },
-                bottomBar = {HomeNavigationBar(View.NOW_PLAYING)}
+        is UiState.Success -> {
+            val movieList = (movieListState as UiState.Success<Flow<PagingData<MovieModel>>>)
+                .data.collectAsLazyPagingItems()
 
-            ) { innerPadding ->
-                HomeGridPaging(movieList, innerPadding){
-                        movie -> navigateToDetails(movie)
-                }
-                if (movieList.loadState.append is LoadState.Loading){
+            when{
+                //starting loading
+                movieList.loadState.refresh is LoadState.Loading && movieList.itemCount == 0 ->{
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -112,33 +111,111 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel(), navigateToDetails:(Mo
                     ){
                         CircularProgressIndicator(
                             modifier =  Modifier.size(64.dp),
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
-            }
+                //not data
+                movieList.loadState.refresh is LoadState.NotLoading && movieList.itemCount == 0 ->{
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = MaterialTheme.colorScheme.background),
+                        contentAlignment = Alignment.Center
+                    ){
+                        Text(
+                            modifier = Modifier.padding(4.dp),
+                            text = stringResource(R.string.no_information),
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+                //Error
+                movieList.loadState.hasError -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = MaterialTheme.colorScheme.error),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ){
 
+                        Text(
+                            modifier = Modifier.padding(4.dp),
+                            text = stringResource(R.string.network_error),
+                            color = MaterialTheme.colorScheme.onError,
+                        )
+
+                        IconButton(
+                            modifier = Modifier,
+                            onClick = {
+                                viewModel.fetchMovies(View.NOW_PLAYING)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Refresh,
+                                contentDescription = "",
+                                tint = MaterialTheme.colorScheme.onError
+                            )
+                        }
+
+                    }
+                }
+                else ->{
+                    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+                    Scaffold(
+                        modifier = Modifier
+                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        topBar = { HomeMainBar(scrollBehavior, viewModel){
+                            navigateToConfig()
+                        }
+                                 },
+                        bottomBar = {HomeNavigationBar(viewModel)}
+
+                    ){ innerPadding ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+
+                            HomeGridPaging(movieList){
+                                    movie -> navigateToDetails(movie)
+                            }
+                            if (movieList.loadState.append is LoadState.Loading){
+                                CircularProgressIndicator(
+                                    modifier =  Modifier.size(32.dp),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+
+                }
+            }
         }
     }
 }
 
 
 @Composable
-fun HomeGrid(movies : List<MovieModel>, navigateToDetails: (MovieModel)->Unit){
-    Column(
+fun HomeGridPaging(
+    movies : LazyPagingItems<MovieModel>,
+    navigateToDetails: (MovieModel)->Unit,
+){
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
+//            .padding(paddingValues)
+            .background(color = MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(horizontal = 12.dp)
     ) {
-        CommonHeader(title = "TheMovieDBAPP"){}
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.background)
-        ) {
-            items(movies){ movie ->
+        items(movies.itemCount){
+            movies[it]?.let { movie ->
+
                 if (!movie.posterPath.isNullOrBlank()){
                     ItemMovie(movie){
                         navigateToDetails(movie)
@@ -147,39 +224,6 @@ fun HomeGrid(movies : List<MovieModel>, navigateToDetails: (MovieModel)->Unit){
             }
         }
     }
-}
-
-@Composable
-fun HomeGridPaging(
-    movies : LazyPagingItems<MovieModel>,
-    paddingValues : PaddingValues,
-    navigateToDetails: (MovieModel)->Unit
-){
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(paddingValues)
-//            .background(color = MaterialTheme.colorScheme.background)
-//    ) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(color = MaterialTheme.colorScheme.background),
-            contentPadding = PaddingValues(horizontal = 12.dp)
-        ) {
-            items(movies.itemCount){
-                movies[it]?.let { movie ->
-                    if (!movie.posterPath.isNullOrBlank()){
-                        ItemMovie(movie){
-                            navigateToDetails(movie)
-                        }
-                    }
-                }
-            }
-        }
-//    }
 }
 
 @Composable
@@ -196,7 +240,9 @@ fun ItemMovie(movie : MovieModel, navigateToDetails: (MovieModel)->Unit){
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .clickable { navigateToDetails(movie) },
+                .clickable {
+                    navigateToDetails(movie)
+                },
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -210,33 +256,44 @@ fun ItemMovie(movie : MovieModel, navigateToDetails: (MovieModel)->Unit){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeMainBar(scrollBehavior: TopAppBarScrollBehavior){
+fun HomeMainBar(
+    scrollBehavior: TopAppBarScrollBehavior,
+    viewModel: HomeViewModel,
+    navigateToConfig : ()->Unit){
     CenterAlignedTopAppBar(
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
-            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
             scrolledContainerColor = MaterialTheme.colorScheme.background
         ),
         title = {
             Text(
-                text = "TheMovieDBApp"
+                text = when(viewModel.activeView.collectAsState().value){
+                    View.NOW_PLAYING ->{stringResource(R.string.now_playing)}
+                    View.POPULAR ->{stringResource(R.string.popular)}
+                    View.TOP_RATED ->{stringResource(R.string.top_rated)}
+                    View.UPCOMING ->{ stringResource(R.string.upcoming)}
+                },
+                style = MaterialTheme.typography.titleMedium
             )
         },
         navigationIcon = {
-            Icon(
-                imageVector = Icons.Filled.Menu,
-                contentDescription = "",
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
+//            Icon(
+//                imageVector = Icons.Filled.Menu,
+//                contentDescription = "",
+//                tint = MaterialTheme.colorScheme.onPrimary
+//            )
         },
         actions = {
             IconButton(
-                onClick = {}
+                onClick = {
+                    navigateToConfig()
+                }
             ) {
                 Icon(
                     imageVector = Icons.Filled.AccountCircle,
                     contentDescription = "",
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         },
@@ -245,59 +302,77 @@ fun HomeMainBar(scrollBehavior: TopAppBarScrollBehavior){
 }
 
 @Composable
-fun HomeNavigationBar(currentView : View){
-    val activeColor = MaterialTheme.colorScheme.secondary
-    val passiveColor = MaterialTheme.colorScheme.onPrimary
+fun HomeNavigationBar(viewModel: HomeViewModel){
+    val view = viewModel.activeView.collectAsState()
+    val activeColor = MaterialTheme.colorScheme.primary
+    val passiveColor = MaterialTheme.colorScheme.onSurface
     BottomAppBar(
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
     ) {
         IconButton(
             modifier = Modifier
                 .weight(1f),
-            onClick = {}
-        ) {
-            Icon(
-                imageVector = Icons.Filled.ThumbUp,
-                contentDescription = "",
-                tint = getColorView(currentView == View.POPULAR,activeColor,passiveColor)
-            )
-        }
-        IconButton(
-            modifier = Modifier
-                .weight(1f),
-            onClick = {}
+            onClick = {
+                viewModel.fetchMovies(View.NOW_PLAYING)
+            }
         ) {
             Icon(
                 imageVector = Icons.Filled.PlayArrow,
                 contentDescription = "",
-                tint = getColorView(currentView == View.NOW_PLAYING,activeColor,passiveColor)
+                tint = provideColor(view.value == View.NOW_PLAYING,activeColor,passiveColor)
             )
         }
+
         IconButton(
             modifier = Modifier
                 .weight(1f),
-            onClick = {}
+            onClick = {
+                viewModel.fetchMovies(View.POPULAR)
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Filled.ThumbUp,
+                contentDescription = "",
+                tint = provideColor(view.value == View.POPULAR,activeColor,passiveColor)
+            )
+        }
+
+        IconButton(
+            modifier = Modifier
+                .weight(1f),
+            onClick = {
+                viewModel.fetchMovies(View.TOP_RATED)
+            }
         ) {
             Icon(
                 imageVector = Icons.Filled.Star,
                 contentDescription = "",
-                tint = getColorView(currentView == View.TOP_RATED,activeColor,passiveColor)
+                tint = provideColor(view.value == View.TOP_RATED,activeColor,passiveColor)
+            )
+        }
+
+        IconButton(
+            modifier = Modifier
+                .weight(1f),
+            onClick = {
+                viewModel.fetchMovies(View.UPCOMING)
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Filled.DateRange,
+                contentDescription = "",
+                tint = provideColor(view.value == View.UPCOMING,activeColor,passiveColor)
             )
         }
     }
 }
 
-private fun getColorView(activeView : Boolean, activeColor : Color, passiveColor : Color) : Color{
-    return if (activeView) activeColor else passiveColor
-}
 
-@Composable
-fun InfoMessage(message : String){
-    Text(
-        modifier = Modifier.padding(4.dp),
-        text = message,
-        color = MaterialTheme.colorScheme.onPrimary,
-    )
-}
 
-enum class View {NOW_PLAYING,TOP_RATED,POPULAR}
+
+enum class View(val key:String) {
+    NOW_PLAYING("now_playing"),
+    TOP_RATED("top_rated"),
+    POPULAR("popular"),
+    UPCOMING("upcoming")
+}

@@ -8,7 +8,9 @@ import okio.IOException
 import javax.inject.Inject
 
 class MoviesPagingSource @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val typeList: String,
+    private val language: String,
 ) : PagingSource<Int, MovieModel>(){
 
     override fun getRefreshKey(state: PagingState<Int, MovieModel>): Int? {
@@ -18,7 +20,7 @@ class MoviesPagingSource @Inject constructor(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MovieModel> {
         return try {
             val page = params.key ?: 1
-            val response = apiService.getMoviesPaging(page = page)
+            val response = apiService.getMoviesPaging(page = page, typeList = typeList, language = language)
             val movieList = response.movieList
 
             val prevKey = if (page > 1) page - 1 else null
@@ -27,6 +29,7 @@ class MoviesPagingSource @Inject constructor(
             LoadResult.Page(
                 data = movieList.map{ movie ->
                     MovieModel(
+                        id = movie.id,
                         posterPath = movie.posterPath,
                         title = movie.title,
                         voteAverage = movie.voteAverage,

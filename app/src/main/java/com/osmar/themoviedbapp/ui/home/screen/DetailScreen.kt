@@ -5,23 +5,32 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,26 +42,98 @@ import com.osmar.themoviedbapp.ui.home.HomeViewModel
 import com.osmar.themoviedbapp.ui.home.models.MovieModel
 import com.osmar.themoviedbapp.utils.ImageSize
 import com.osmar.themoviedbapp.utils.Utils
+import com.osmar.themoviedbapp.utils.Utils.provideColor
+import java.util.Locale
 
 @Composable
 fun DetailScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     movie : MovieModel,
     navigationBack: () -> Unit
+){
+    LaunchedEffect(Unit) {
+        viewModel.fetchGenresName(movie.genreIDs)
+        viewModel.isFavorite(movie.id)
+    }
+    val genresName by viewModel.genreNameList.collectAsState()
+    when(genresName){
+        is UiState.Error -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.error),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+
+                Text(
+                    modifier = Modifier.padding(4.dp),
+                    text = stringResource(R.string.network_error),
+                    color = MaterialTheme.colorScheme.onError,
+                )
+
+                IconButton(
+                    modifier = Modifier,
+                    onClick = {
+                        viewModel.fetchGenresName(movie.genreIDs)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh,
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.onError
+                    )
+                }
+
+            }
+        }
+        UiState.Loading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ){
+                CircularProgressIndicator(
+                    modifier =  Modifier.size(64.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        UiState.Start -> {
+            Text("")}
+        is UiState.Success ->{
+            val genres = (genresName as UiState.Success<List<String>>).data
+            DetailContent(movie,genres, viewModel) {
+                navigationBack()
+            }
+        }
+    }
+
+}
+
+@Composable
+fun DetailContent(
+    movie : MovieModel,
+    genresList : List<String>,
+    viewModel: HomeViewModel,
+    navigationBack: () -> Unit
     ){
+
+    val isFavorite = viewModel.isFavorite.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        CommonHeader(title = "Details", true){
+        CommonHeader(title = stringResource(R.string.details), true){
             navigationBack()
         }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
                 .weight(1f)
         ) {
             AsyncImage(
@@ -69,7 +150,11 @@ fun DetailScreen(
                 .padding(16.dp)
                 .weight(1f)
         ) {
-            Column {
+            val scrollStateDescription = rememberScrollState()
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollStateDescription)
+            ) {
                 Row(
                     modifier = Modifier
                         .padding(bottom = 16.dp)
@@ -78,7 +163,7 @@ fun DetailScreen(
                         modifier = Modifier
                             .weight(1f),
                         text = movie.title,
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.titleLarge
                     )
@@ -98,48 +183,62 @@ fun DetailScreen(
                             )
 
                             Text(
-                                text = "(${movie.voteAverage})",
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                text = String.format(Locale.US,"%.1f",movie.voteAverage),
+                                color = MaterialTheme.colorScheme.secondary,
                                 textAlign = TextAlign.End
                             )
                         }
                     }
                 }
-                Row {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        modifier = Modifier
-                            .padding(bottom = 16.dp),
                         text = movie.releaseDate.substring(0,4),
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.secondary
                     )
+                    IconButton(
+                        onClick = {
+                            if (isFavorite.value){
+                                viewModel.removeToFavorite(movie)
+                            }else{
+                                viewModel.addToFavorite(movie)
+                            }
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.bookmark_hearth),
+                            contentDescription = "",
+                            tint = provideColor(
+                                isFavorite.value,
+                                MaterialTheme.colorScheme.tertiary,
+                                MaterialTheme.colorScheme.onSurface)
+                        )
+                    }
+//                    Image(
+//                        modifier = Modifier.clickable { Log.d("HomeViewModel", "hola") },
+//                        painter = painterResource(id = R.drawable.bookmark_hearth),
+//                        contentDescription = ""
+//                    )
                 }
                 val scrollStateGenre = rememberScrollState()
                 Row(
                     modifier = Modifier
                         .horizontalScroll(scrollStateGenre)
                 ) {
-                    viewModel.fetchGenresName(movie.genreIDs)
-                    val genresName by viewModel.genreNameList.collectAsState()
-                    when(genresName){
-                        is UiState.Error -> GenreItem((genresName as UiState.Error).message)
-                        UiState.Loading -> GenreItem("Loading")
-                        UiState.Start -> {}
-                        is UiState.Success ->{
-                            (genresName as UiState.Success<List<String>>).data.forEach{ genreID ->
-                                GenreItem(genreID)
-                            }
-                        }
+                    genresList.forEach{ genreID ->
+                        GenreItem(genreID)
                     }
-
                 }
-                val scrollStateDescription = rememberScrollState()
+
                 Row{
                     Text(
                         modifier = Modifier
-                            .padding(top = 8.dp)
-                            .verticalScroll(scrollStateDescription),
+                            .padding(top = 8.dp),
                         text = movie.description,
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = MaterialTheme.colorScheme.secondary,
                         textAlign = TextAlign.Start
                     )
                 }
@@ -155,14 +254,14 @@ fun GenreItem(genreName : String){
         modifier = Modifier
             .padding(4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = MaterialTheme.colorScheme.tertiary
         )
     ){
         Text(
             modifier = Modifier
                 .padding(4.dp),
             text = genreName,
-            color = MaterialTheme.colorScheme.onPrimary,
+            color = MaterialTheme.colorScheme.onTertiary,
         )
     }
 }

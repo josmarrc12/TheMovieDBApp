@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TheMovieDBApp</string>
+    <string name="no_information">Sin información</string>
+    <string name="network_error">Error de Red</string>
+    <string name="now_playing">En Cartelera</string>
+    <string name="popular">Popular</string>
+    <string name="top_rated">Mejor valoradas</string>
+    <string name="upcoming">Próximamente</string>
+    <string name="details">Detalles</string>
+    <string name="language">IDIOMA</string>
+    <string name="close">Cerrar</string>
+    <string name="settings">Configuración</string>
+    <string name="language_menu">Idioma</string>
+    <string name="error">Error</string>
+    <string name="bookmarks">Guardados</string>
+    <string name="are_you_sure">¿Estás seguro?</string>
+    <string name="accept">Aceptar</string>
+    <string name="language_is_already_in_use">El idioma seleccionado ya está en uso.</string>
+</resources>

@@ -3,7 +3,6 @@ package com.osmar.themoviedbapp.ui.common
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,7 +24,8 @@ fun CommonHeader(
         title = {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
         },
         navigationIcon = {
@@ -36,23 +36,14 @@ fun CommonHeader(
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "",
-                        tint = MaterialTheme.colorScheme.onPrimary
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
-            titleContentColor = MaterialTheme.colorScheme.onPrimary,
-//            navigationIconContentColor = ,
-//            actionIconContentColor =
+            titleContentColor = MaterialTheme.colorScheme.primary,
         )
     )
-}
-
-@Composable
-fun GenericBottomAppBar(){
-    BottomAppBar() {
-
-    }
 }

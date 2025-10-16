@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option java_package = "com.osmar.themoviedbapp.datastore";
+option java_multiple_files = true;
+
+message LanguagePreferences{
+
+  enum Languages{
+    UNSPECIFIED = 0;
+    SPANISH = 1;
+    ENGLISH = 2;
+  }
+
+  Languages default_language = 1;
+
+  bool change_language = 2;
+}
