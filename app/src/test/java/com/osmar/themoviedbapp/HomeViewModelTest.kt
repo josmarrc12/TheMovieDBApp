@@ -27,7 +27,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import org.junit.Assert.*
 import org.junit.Before
 
 class HomeViewModelTest {
@@ -66,7 +65,7 @@ class HomeViewModelTest {
         }
 
         class FakeMovieListRepository : MovieListRepository{
-            override fun getMovieListPagination(typeList: String, language: String,): Flow<PagingData<MovieModel>> {
+            override fun getMovieListPagination(typeList: String, language: String): Flow<PagingData<MovieModel>> {
                 return Pager(config = PagingConfig(
                     pageSize = MAX_ITEMS,
                     prefetchDistance = PREFETCH_ITEMS
@@ -78,17 +77,13 @@ class HomeViewModelTest {
         }
 
         class FakeGenreRepository : GenreRepository{
-            override suspend fun getGenreList(language: String,): ResultResponse<GenresModel> {
+            override suspend fun getGenreList(language: String): ResultResponse<GenresModel> {
                 return ResultResponse.Success(GenresModel(listOf(
                     GenreModel(1,""),
                     GenreModel(2,""),
                     GenreModel(3,""),
                 )))
             }
-        }
-        val languagePrefs: DataStore<LanguagePreferences>
-        class FakeLanguageManager{
-
         }
 
         class FakeMovieDaoRepository : MovieDaoRepository{
