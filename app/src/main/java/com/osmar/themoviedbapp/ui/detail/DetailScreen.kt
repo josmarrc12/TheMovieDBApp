@@ -1,4 +1,4 @@
-package com.osmar.themoviedbapp.ui.home.screen
+package com.osmar.themoviedbapp.ui.detail
 
 
 import androidx.compose.foundation.Image
@@ -38,8 +38,7 @@ import coil3.compose.AsyncImage
 import com.osmar.themoviedbapp.R
 import com.osmar.themoviedbapp.ui.UiState
 import com.osmar.themoviedbapp.ui.common.CommonHeader
-import com.osmar.themoviedbapp.ui.home.HomeViewModel
-import com.osmar.themoviedbapp.ui.home.models.MovieModel
+import com.osmar.themoviedbapp.ui.MovieModel
 import com.osmar.themoviedbapp.utils.ImageSize
 import com.osmar.themoviedbapp.utils.Utils
 import com.osmar.themoviedbapp.utils.Utils.provideColor
@@ -47,7 +46,7 @@ import java.util.Locale
 
 @Composable
 fun DetailScreen(
-    viewModel: HomeViewModel = hiltViewModel(),
+    viewModel: DetailViewModel = hiltViewModel(),
     movie : MovieModel,
     navigationBack: () -> Unit
 ){
@@ -116,7 +115,7 @@ fun DetailScreen(
 fun DetailContent(
     movie : MovieModel,
     genresList : List<String>,
-    viewModel: HomeViewModel,
+    viewModel: DetailViewModel,
     navigationBack: () -> Unit
     ){
 
@@ -153,6 +152,7 @@ fun DetailContent(
             val scrollStateDescription = rememberScrollState()
             Column(
                 modifier = Modifier
+                    .padding(bottom = 36.dp)
                     .verticalScroll(scrollStateDescription)
             ) {
                 Row(

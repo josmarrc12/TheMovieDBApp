@@ -1,4 +1,4 @@
-package com.osmar.themoviedbapp.ui.home.models
+package com.osmar.themoviedbapp.ui
 
 import android.os.Parcelable
 import com.osmar.themoviedbapp.data.database.entity.MoviesEntity

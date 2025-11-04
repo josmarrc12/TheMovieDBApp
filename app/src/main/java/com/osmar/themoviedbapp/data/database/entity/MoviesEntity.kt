@@ -2,7 +2,7 @@ package com.osmar.themoviedbapp.data.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.osmar.themoviedbapp.ui.home.models.MovieModel
+import com.osmar.themoviedbapp.ui.MovieModel
 
 @Entity
 data class MoviesEntity (
@@ -15,7 +15,7 @@ data class MoviesEntity (
     val description : String
 )
 
-fun MoviesEntity.toModel() : MovieModel{
+fun MoviesEntity.toModel() : MovieModel {
     return MovieModel(
         id = id,
         posterPath = posterPath,

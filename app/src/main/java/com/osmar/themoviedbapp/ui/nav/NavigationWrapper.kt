@@ -5,10 +5,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.osmar.themoviedbapp.ui.home.models.MovieModel
+import com.osmar.themoviedbapp.ui.MovieModel
 import com.osmar.themoviedbapp.ui.menu.MenuScreen
-import com.osmar.themoviedbapp.ui.home.screen.DetailScreen
-import com.osmar.themoviedbapp.ui.home.screen.HomeScreen
+import com.osmar.themoviedbapp.ui.detail.DetailScreen
+import com.osmar.themoviedbapp.ui.home.HomeScreen
 import com.osmar.themoviedbapp.ui.menu.bookmarks.BookmarksScreen
 import kotlinx.serialization.Serializable
 import kotlin.reflect.typeOf
@@ -55,9 +55,11 @@ fun NavigationWrapper(){
             )
         }
         composable<Bookmarks> {
-            BookmarksScreen {
-                navController.navigateUp()
-            }
+            BookmarksScreen(
+                navigationBack = { navController.navigateUp() },
+                navigateToDetails = { movie -> navController.navigate(Details(movie = movie)) },
+            )
+
         }
     }
 }

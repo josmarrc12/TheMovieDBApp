@@ -5,7 +5,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.osmar.themoviedbapp.data.network.ApiService
 import com.osmar.themoviedbapp.data.paging.MoviesPagingSource
-import com.osmar.themoviedbapp.ui.home.models.MovieModel
+import com.osmar.themoviedbapp.ui.MovieModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

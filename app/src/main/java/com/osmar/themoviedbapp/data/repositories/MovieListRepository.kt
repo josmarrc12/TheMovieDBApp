@@ -1,7 +1,7 @@
 package com.osmar.themoviedbapp.data.repositories
 
 import androidx.paging.PagingData
-import com.osmar.themoviedbapp.ui.home.models.MovieModel
+import com.osmar.themoviedbapp.ui.MovieModel
 import kotlinx.coroutines.flow.Flow
 
 interface MovieListRepository {

@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.osmar.themoviedbapp.data.database.entity.MoviesEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MoviesDao {
@@ -23,5 +24,5 @@ interface MoviesDao {
     suspend fun getMovieDetail(idMovie : Long) : MoviesEntity?
 
     @Query("SELECT * FROM MoviesEntity ORDER BY releaseDate DESC")
-    suspend fun getMovieList() : List<MoviesEntity>
+    fun getMovieList() : Flow<List<MoviesEntity>>
 }

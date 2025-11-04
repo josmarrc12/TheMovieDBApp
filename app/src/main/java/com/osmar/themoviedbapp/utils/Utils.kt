@@ -2,6 +2,7 @@ package com.osmar.themoviedbapp.utils
 
 import androidx.compose.ui.graphics.Color
 import com.osmar.themoviedbapp.data.ApiConstants
+import com.osmar.themoviedbapp.datastore.LanguagePreferences.Languages
 
 object Utils {
     fun getUrlImage(size : String, endpoint : String?) : String{
@@ -16,6 +17,16 @@ object Utils {
     fun provideColor(isSelected : Boolean, activeColor : Color, passiveColor : Color) : Color {
         return if (isSelected) activeColor else passiveColor
     }
+
+    fun transformLanguage(language : Languages): String {
+        return when(language){
+            Languages.SPANISH -> "es"
+            Languages.ENGLISH -> "en"
+            else -> "en"
+        }
+    }
+
+
 }
 enum class ImageSize(val size: String){
 //    SMALL("w92"),

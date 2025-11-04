@@ -1,4 +1,4 @@
-package com.osmar.themoviedbapp.ui.home.screen
+package com.osmar.themoviedbapp.ui.home
 
 
 import androidx.compose.foundation.background
@@ -50,9 +50,8 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil3.compose.AsyncImage
 import com.osmar.themoviedbapp.R
+import com.osmar.themoviedbapp.ui.MovieModel
 import com.osmar.themoviedbapp.ui.UiState
-import com.osmar.themoviedbapp.ui.home.HomeViewModel
-import com.osmar.themoviedbapp.ui.home.models.MovieModel
 import com.osmar.themoviedbapp.utils.ImageSize
 import com.osmar.themoviedbapp.utils.Utils
 import com.osmar.themoviedbapp.utils.Utils.provideColor
@@ -170,7 +169,7 @@ fun HomeScreen(
                             navigateToConfig()
                         }
                                  },
-                        bottomBar = {HomeNavigationBar(viewModel)}
+                        bottomBar = { HomeNavigationBar(viewModel) }
 
                     ){ innerPadding ->
                         Box(

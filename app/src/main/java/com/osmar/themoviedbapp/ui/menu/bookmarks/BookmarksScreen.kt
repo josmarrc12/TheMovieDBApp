@@ -1,6 +1,7 @@
 package com.osmar.themoviedbapp.ui.menu.bookmarks
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,14 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,65 +29,35 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.osmar.themoviedbapp.R
-import com.osmar.themoviedbapp.ui.UiState
+import com.osmar.themoviedbapp.ui.MovieModel
 import com.osmar.themoviedbapp.ui.common.CommonHeader
-import com.osmar.themoviedbapp.ui.home.models.MovieModel
 import com.osmar.themoviedbapp.utils.ImageSize
 import com.osmar.themoviedbapp.utils.Utils
 
 @Composable
 fun BookmarksScreen(
     viewModel: BookmarksViewModel = hiltViewModel(),
-    navigationBack: () ->  Unit
+    navigationBack: () ->  Unit,
+    navigateToDetails:(MovieModel) -> Unit,
 ){
-    val movieListState by viewModel.movieList.collectAsState()
-    when(movieListState){
-        UiState.Start ->{}
-        is UiState.Error -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.error),
-                contentAlignment = Alignment.Center
-            ){
-                Text(
-                    modifier = Modifier.padding(4.dp),
-                    text = stringResource(R.string.error),
-                    color = MaterialTheme.colorScheme.onError,
-                )
-            }
+    val items by viewModel.items.collectAsState(initial = emptyList())
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        CommonHeader(title = stringResource(R.string.bookmarks), isNavigation = true) {
+            navigationBack()
         }
-        UiState.Loading -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
-            ){
-                CircularProgressIndicator(
-                    modifier =  Modifier.size(64.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        is UiState.Success<*> -> {
-            val movieList = (movieListState as UiState.Success<List<MovieModel>>).data
-            Column(
-                modifier = Modifier.fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                CommonHeader(title = stringResource(R.string.bookmarks), isNavigation = true) {
-                    navigationBack()
-                }
-                BookmarkContent(movieList, viewModel)
-            }
-
-        }
+        BookmarkContent(items, viewModel, navigateToDetails)
     }
 }
 
 @Composable
-fun BookmarkContent(movieList: List<MovieModel>, viewModel: BookmarksViewModel) {
+fun BookmarkContent(
+    movieList: List<MovieModel>,
+    viewModel: BookmarksViewModel,
+    navigateToDetails:(MovieModel) -> Unit
+    ) {
     LazyColumn(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background),
@@ -98,7 +67,8 @@ fun BookmarkContent(movieList: List<MovieModel>, viewModel: BookmarksViewModel) 
             Card(
                 modifier = Modifier
                     .height(128.dp)
-                    .padding(4.dp),
+                    .padding(4.dp)
+                    .clickable { navigateToDetails(movie) },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
@@ -150,10 +120,7 @@ fun BookmarkContent(movieList: List<MovieModel>, viewModel: BookmarksViewModel) 
                         )
                     }
                 }
-
-
             }
-
         }
     }
 }

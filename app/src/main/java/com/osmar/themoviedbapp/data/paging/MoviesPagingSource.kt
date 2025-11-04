@@ -3,7 +3,7 @@ package com.osmar.themoviedbapp.data.paging
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.osmar.themoviedbapp.data.network.ApiService
-import com.osmar.themoviedbapp.ui.home.models.MovieModel
+import com.osmar.themoviedbapp.ui.MovieModel
 import okio.IOException
 import javax.inject.Inject
 
