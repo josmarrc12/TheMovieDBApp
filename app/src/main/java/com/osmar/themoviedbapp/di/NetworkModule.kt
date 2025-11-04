@@ -2,6 +2,7 @@ package com.osmar.themoviedbapp.di
 
 import com.osmar.themoviedbapp.data.ApiConstants
 import com.osmar.themoviedbapp.data.network.ApiService
+import com.osmar.themoviedbapp.data.network.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,16 +15,19 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RetrofitModule{
+object NetworkModule{
     @Singleton
     @Provides
-    fun provideRetrofit(): Retrofit{
+    fun provideRetrofit(
+        authInterceptor: AuthInterceptor
+    ): Retrofit{
         val interceptor = HttpLoggingInterceptor()
         interceptor.level = HttpLoggingInterceptor.Level.BODY
 
 
         val client = OkHttpClient.Builder()
             .addInterceptor(interceptor)
+            .addInterceptor(authInterceptor)
             .build()
 
         return Retrofit.Builder()
@@ -38,5 +42,8 @@ object RetrofitModule{
     fun provideApiClient(retrofit: Retrofit) : ApiService{
         return retrofit.create(ApiService::class.java)
     }
+
+    @Provides
+    fun provideAuthInterceptor(): AuthInterceptor = AuthInterceptor()
 }
 
